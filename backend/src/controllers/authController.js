@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { config } from '../config/config.js';
+import { createAccessToken, createRefreshToken, readRefreshToken } from '../utils/auth.util.js';
 
 const safeUser = user => ({ _id: user._id, name: user.name, email: user.email });
 
@@ -15,8 +14,26 @@ export async function register(req, res) {
 export async function login(req, res) {
   const user = await User.findOne({ email: req.body.email }).select('+password');
   if (!user || !(await bcrypt.compare(req.body.password, user.password))) return res.status(401).json({ message: 'Email or password is incorrect' });
-  const accessToken = jwt.sign({ id: user._id }, config.JWT_SECRET, { expiresIn: '7d' });
-  res.json({ message: 'Logged in', accessToken, user: safeUser(user) });
+  const accessToken = createAccessToken(user._id);
+  const refreshToken = createRefreshToken(user._id);
+  res.json({ message: 'Logged in', accessToken, refreshToken, user: safeUser(user) });
+}
+
+export async function refreshAccessToken(req, res) {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(401).json({ message: 'Refresh token is required' });
+
+  let payload;
+  try {
+    payload = readRefreshToken(refreshToken);
+  } catch {
+    return res.status(401).json({ message: 'Refresh token is invalid or expired' });
+  }
+
+  const user = await User.findById(payload.id);
+  if (!user) return res.status(401).json({ message: 'User no longer exists' });
+
+  res.json({ accessToken: createAccessToken(user._id) });
 }
 
 export async function getCurrentUser(req, res) {

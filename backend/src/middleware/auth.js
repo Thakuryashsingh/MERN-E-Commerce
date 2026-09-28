@@ -1,12 +1,11 @@
-import jwt from 'jsonwebtoken';
-import { config } from '../config/config.js';
+import { readAccessToken } from '../utils/auth.util.js';
 
 export function requireAuth(req, res, next) {
   const header = req.get('Authorization') || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!token) return res.status(401).json({ message: 'Authentication required' });
   let payload;
-  try { payload = jwt.verify(token, config.JWT_SECRET); }
+  try { payload = readAccessToken(token); }
   catch {
     return res.status(401).json({ message: 'Access token is invalid or expired' });
   }

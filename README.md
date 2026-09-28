@@ -17,11 +17,10 @@ and a React frontend that consumes the backend APIs.
 - User login
 - JWT Access Token
 - JWT Refresh Token
-- Refresh token using httpOnly cookie
+- Refresh token used to request a new access token
 - Protected routes
 - Get currently authenticated user
-- Secure logout
-- Server-side refresh-token invalidation
+- Logout clears tokens from browser storage
 - Password hashing using bcrypt
 
 ### Product Management
@@ -69,7 +68,7 @@ and a React frontend that consumes the backend APIs.
 - Vite
 - React Router
 - Axios
-- CSS / Tailwind CSS
+- Tailwind CSS
 
 ## Backend
 
@@ -80,8 +79,6 @@ and a React frontend that consumes the backend APIs.
 - JWT
 - bcryptjs
 - express-validator
-- cookie-parser
-- CORS
 
 ---
 
@@ -134,3 +131,9 @@ MERN/
 ├── package.json
 ├── package-lock.json
 └── README.md
+
+## Beginner token flow
+
+`backend/src/utils/auth.util.js` creates and verifies access and refresh tokens. The access token is sent with protected API requests. When it expires, the frontend sends the saved refresh token to `/api/auth/refresh-token` and retries the request.
+
+For this beginner version, both tokens are stored in browser `localStorage`; logout removes them from there. Passwords are hashed with bcrypt. The refresh token is not revoked on the server when logging out.

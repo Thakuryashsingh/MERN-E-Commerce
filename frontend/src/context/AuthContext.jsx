@@ -16,10 +16,12 @@ export function AuthProvider({ children }) {
   const login = useCallback(async credentials => {
     const { data } = await loginRequest(credentials);
     localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
     try {
       return await getCurrentUser();
     } catch (error) {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       throw error;
     }
   }, [getCurrentUser]);
@@ -31,11 +33,12 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     setUser(null);
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem('accessToken')) {
+    if (!localStorage.getItem('accessToken') && !localStorage.getItem('refreshToken')) {
       setLoading(false);
       return;
     }
@@ -43,10 +46,19 @@ export function AuthProvider({ children }) {
     getCurrentUser()
       .catch(() => {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         setUser(null);
       })
       .finally(() => setLoading(false));
   }, [getCurrentUser]);
+
+  useEffect(() => {
+    function handleExpiredToken() {
+      setUser(null);
+    }
+    window.addEventListener('auth:expired', handleExpiredToken);
+    return () => window.removeEventListener('auth:expired', handleExpiredToken);
+  }, []);
 
   const value = useMemo(() => ({
     user,
