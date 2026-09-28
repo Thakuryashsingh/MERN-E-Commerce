@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-brand: "Manrope", sans-serif;
+
+  --color-paper: #f7f5f0;
+  --color-ink: #262a23;
+  --color-muted: #81847b;
+  --color-line: #e5e2d9;
+  --color-green: #344b3d;
+  --color-olive: #a7ad8b;
+  --color-clay: #a66d4d;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply m-0 min-w-80 bg-paper font-sans text-ink antialiased;
+  }
+
+  button,
+  input,
+  textarea {
+    @apply font-sans;
+  }
+
+  button {
+    @apply cursor-pointer;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+}
